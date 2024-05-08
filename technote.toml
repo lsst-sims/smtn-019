@@ -1,0 +1,23 @@
+[technote]
+id = "SMTN-019"
+series_id = "SMTN"
+canonical_url = "https://smtn-019.lsst.io"
+github_url = "https://github.com/lsst-sims/smtn-019"
+github_default_branch = "main"
+date_created = 2024-05-08T16:20:52Z
+organization.name = "Vera C. Rubin Observatory"
+organization.ror = "https://ror.org/048g3cy84"
+license.id = "CC-BY-4.0"
+
+[technote.status]
+state = "draft"
+
+[[technote.authors]]
+name.given = "Joshua"
+name.family = "Meyers"
+internal_id = "meyersj"
+orcid = "https://orcid.org/0000-0002-2308-4230"
+[[technote.authors.affiliations]]
+name = "Department of Astrophysical Sciences"
+internal_id = "Princeton-Astro"
+address = "Princeton University, Princeton, NJ 08544, USA"
