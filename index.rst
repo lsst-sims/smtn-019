@@ -7,6 +7,19 @@ On-sky and hardware rotation angles.
    The rotation angles ``RotTelPos`` and ``RotSkyPos`` are precisely defined
    and conversion routines are established.
 
+Introduction
+============
+
+The Rubin observatory Simonyi Survey Telescope (SST) employs a camera rotator
+both to track the sky on its alt-az mount and to facilitate rotational dithering
+during survey operations. Two principle rotation angles are used to describe the
+orientation of the camera in different engineering and scientific contexts:
+``RotSkyPos``, which orients the projected focal plane with respect to the
+celestial sphere, and ``RotTelPos`` which orients the physical camera hardware
+with respect to the telescope mount assembly (TMA). This document describes the
+relationship between these two angles and provides a Python routine to convert
+between them.
+
 Definitions
 ===========
 
@@ -22,8 +35,10 @@ When the telescope is pointed towards the horizon:
 - :math:`+X_\mathrm{OCS}` completes the right-handed coordinate system.
   It points towards the right as you look from the sky towards the reflective
   surface of M1.
-- The OCS origin is the hypothetical vertex of M1.
-- The OCS follows the TMA.
+
+Addtionally, the OCS origin is the hypothetical vertex of M1, and the OCS
+follows the TMA as it tracks and slews across the sky.
+
 
 .. figure:: ./_static/OCS_josh.png
 
@@ -47,34 +62,36 @@ Summary:
 
    View from front of TMA, looking towards M1M3 mass surrogate (the large
    yellow X), with M2 surrogate and ComCam in the top right of the image.
-   Camera Coordinate System when RotTelPos = 0 is indicated. (+Z_CCS is
+   Camera Coordinate System when ``RotTelPos`` = 0 is indicated. (+Z_CCS is
    partially out-of-the-page.)
 
 .. figure:: ./_static/CCS_RTP30.png
 
-   Same as :ref:`Fig 2 <fig-CCS_RTP0>`, but indicating RotTelPos=30 degrees.
-   When viewed from the sky towards M1M3, the camera rotates counter clockwise
-   with increasing RotTelPos.
+   Same as :ref:`Fig 2 <fig-CCS_RTP0>`, but indicating ``RotTelPos`` = 30
+   degrees. When viewed from the sky towards M1M3, the camera rotates counter
+   clockwise with increasing ``RotTelPos``.
 
 
 Data Visualization Coordinate System (DVCS)
 -------------------------------------------
 
 The DVCS is the primary focal plane coordinate system used by data management.
-It is defined as the transpose of the CCS.  See https://ls.st/LSE-349 for more
+It is defined as the transpose of the CCS. See https://ls.st/LSE-349 for more
 details.
 
 .. figure:: ./_static/CCS_DVCS.png
 
-   LSSTCam in the clean room with CCS and DVCS axes indicated.  RotTelPos here
-   is 0 degrees.
+   LSSTCam in the clean room with CCS and DVCS axes indicated. ``RotTelPos``
+   here is 0 degrees.
 
 .. figure:: ./_static/CCS_DVCS_RTP45.png
 
-   The camera turns clockwise from this point of view as RotTelPos increases.
+   The camera turns clockwise from this point of view as ``RotTelPos``
+   increases.
 
 Note how you can infer the camera orientation from the differing layouts and
-colors of the ITL and e2v CCDs.
+colors of the ITL and e2v CCDs (:math:`+X_\mathrm{CCS}` is to the left,
+:math:`+Y_\mathrm{CCS}` is to the top).
 
 .. figure:: ./_static/CCD_Vendors.png
 
@@ -84,19 +101,19 @@ colors of the ITL and e2v CCDs.
 Raft R24 lies along :math:`+Y_\mathrm{CCS}`, and R42 along
 :math:`+X_\mathrm{CCS}`.
 
-RotTelPos
----------
+``RotTelPos``
+-------------
 - This is the camera hardware rotator angle.
 - When the camera is mounted on the telescope and the telescope is pointed to
   the horizon, a value of RotTelPos=0 orients the camera such that the
   :math:`+Y_\mathrm{CCS}` points towards zenith.
 - A positive value of RotTelPos rotates the camera clockwise as viewed from
   M1M3 towards the camera.
-- The range of RotTelPos is limited to -90 degrees to +90 degrees.
+- The range of ``RotTelPos`` is limited to -90 degrees to +90 degrees.
 
 
-RotSkyPos
----------
+``RotSkyPos``
+-------------
 - This is the orientation of the :math:`+Y_\mathrm{DVCS}` axis (projected on
   the sky) measured east of north in the International Celestial Reference
   Frame (ICRF).
@@ -108,8 +125,8 @@ Parallactic Angle
   given sky coordinate.
 - Note that the definition references true North, which is slightly different
   from ICRF North, and slowly precessing with Earth's axis.
-- When converting between RotTelPos and RotSkyPos, we require the position
-  angle of zenith measured east from *ICRF* North.
+- When converting between ``RotTelPos`` and ``RotSkyPos``, we require the
+  position angle of zenith measured east from *ICRF* North.
 
 Pseudo Parallactic Angle
 ------------------------
@@ -119,8 +136,8 @@ Pseudo Parallactic Angle
   pseudo parallactic angle here.
 
 
-Converting from RotTelPos to RotSkyPos
-======================================
+Converting from ``RotTelPos`` to ``RotSkyPos``
+==============================================
 
 Let's work out an example taking into account the various definitions above.
 For the moment, we'll just focus on getting signs right.
@@ -144,25 +161,25 @@ From here, the direction to zenith and the direction to the North Celestial
 Pole are almost the same.  I.e., the parallactic and pseudo parallactic angles
 are both nearly 0.
 
-Let's say that RotTelPos = 0 degrees.  Then Fig. 6 shows us that R24 is
+Let's say that ``RotTelPos`` = 0 degrees. Then Fig. 6 shows us that R24 is
 physically "up" inside the camera, in the sense that it is farther from the
 center of the Earth than R20.  However, as a consequence of the odd number of
 mirrors in the Simonyi Survey Telescope, when projected onto the sky, *the
 image is rotated 180 degrees!*  (Or equivalently, reflected through the
 origin). R20 is projected towards the top of Fig. 7, and R24 towards the
 bottom.  Similarly, R42, which lies along :math:`+Y_\mathrm{DVCS}`, is
-projected towards the right of the Fig. 7.  Since RotSkyPos is the orientation
-of :math:`+Y_\mathrm{DVCS}` ("right") measured east ("left") of north ("up"),
-we can see that it's about +270 degrees here.
+projected towards the right of the Fig. 7.  Since ``RotSkyPos`` is the
+orientation of :math:`+Y_\mathrm{DVCS}` ("right") measured east ("left") of
+north ("up"), we can see that it's about +270 degrees here.
 
-Recall that increasing RotTelPos rotates the camera clockwise when viewed from
-M1M3.  I.e., R42 rotates towards R43, which must still be true when both are
-projected onto the sky.  Since the projection onto the sky is also just a
-rotation, we conclude that increasing RotTelPos rotates the projection of the
-camera clockwise on the sky.  If we set RotTelPos = 45 degrees, that makes
-:math:`+Y_\mathrm{DVCS}` rotate from "right" to "top right", and we see that
-RotSkyPos = +225 degrees.  So increasing RotTelPos results in decreasing
-RotSkyPos.
+Recall that increasing ``RotTelPos`` rotates the camera clockwise when viewed
+from M1M3.  I.e., R42 rotates towards R43, which must still be true when both
+are projected onto the sky.  Since the projection onto the sky is also just a
+rotation, we conclude that increasing ``RotTelPos`` rotates the projection of
+the camera clockwise on the sky.  If we set ``RotTelPos`` = 45 degrees, that
+makes :math:`+Y_\mathrm{DVCS}` rotate from "right" to "top right", and we see
+that ``RotSkyPos`` = +225 degrees.  So increasing ``RotTelPos`` results in
+decreasing ``RotSkyPos``.
 
 Finally, imagine observing HD116244 a few hours later, for concreteness at
 
@@ -179,18 +196,19 @@ Here's the new view from Stellarium:
 Since the parallactic angle is the direction of zenith from north through east,
 we can eyeball it at about +45 degrees.
 
-As before, setting RotTelPos = 0 degrees places the projection of R42 (i.e.,
+As before, setting ``RotTelPos`` = 0 degrees places the projection of R42 (i.e.,
 the projection of :math:`+Y_\mathrm{DVCS}`) towards the right.  We can now
-eyeball the value of RotSkyPos as the angle from north ("up and right") through
-east ("up and left") of :math:`+Y_\mathrm{DVCS}` ("right"), about +315 degrees.
-So increasing the parallactic angle at fixed RotTelPos increases RotSkyPos.
+eyeball the value of ``RotSkyPos`` as the angle from north ("up and right")
+through east ("up and left") of :math:`+Y_\mathrm{DVCS}` ("right"), about +315
+degrees. So increasing the parallactic angle at fixed ``RotTelPos`` increases
+``RotSkyPos``.
 
 Combining the above, and using :math:`q` for the (pseudo) parallactic angle, we
 arrive at the relation:
 
 .. math:: \mathrm{RotSkyPos} = 270^{\circ} - \mathrm{RotTelPos} + q
 
-The final wrinkle is that we'd like our definition of RotSkyPos to reference
+The final wrinkle is that we'd like our definition of ``RotSkyPos`` to reference
 ICRF north and not true north.  This means that for precise results we need to
 use the pseudo parallactic angle.  Unfortunately, this value isn't readily
 available in most astrometry libraries.  We provide a routine to compute it
@@ -199,10 +217,11 @@ directly below.
 Code
 ====
 
-The following code can be used to transform between RotSkyPos and RotTelPos.
-We use the precise relation that uses the pseudo parallactic angle.  We've also
-added interfaces for setting the ambient pressure, temperature, relative
-humidity, observation wavelength, and observatory coordinates.
+The following code can be used to transform between ``RotSkyPos`` and
+``RotTelPos``. We use the precise relation that uses the pseudo parallactic
+angle.  We've also added interfaces for setting the ambient pressure,
+temperature, relative humidity, observation wavelength, and observatory
+coordinates.
 
 Note that like all astrometric computations, results can be sensitive to which
 Earth ellipsoid, precession and nutation models you use.
